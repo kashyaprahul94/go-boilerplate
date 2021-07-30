@@ -2,7 +2,8 @@ package mysql
 
 import (
 	"fmt"
-	"go-boilerplate/config"
+
+	"github.com/kashyaprahul94/go-boilerplate/config"
 )
 
 var db *MySQLDatabaseInstance

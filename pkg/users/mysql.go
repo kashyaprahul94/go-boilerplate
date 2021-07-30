@@ -2,7 +2,8 @@ package users
 
 import (
 	"fmt"
-	"go-boilerplate/internal/persistence/mysql"
+
+	"github.com/kashyaprahul94/go-boilerplate/internal/persistence/mysql"
 )
 
 func insertIntoMySql(user *User) {

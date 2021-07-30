@@ -2,7 +2,8 @@ package main
 
 import (
 	"fmt"
-	"go-boilerplate/pkg/users"
+
+	"github.com/kashyaprahul94/go-boilerplate/pkg/users"
 )
 
 func main() {
