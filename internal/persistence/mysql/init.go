@@ -2,27 +2,58 @@ package mysql
 
 import (
 	"fmt"
+	"time"
 
 	"github.com/kashyaprahul94/go-boilerplate/config"
+	"github.com/kashyaprahul94/go-boilerplate/internal/logger"
+
+	"gorm.io/driver/mysql"
+	"gorm.io/gorm"
 )
 
-var db *MySQLDatabaseInstance
+// mysqlInstance is the singleton database configured instance
+var mysqlInstance *MySQLDatabaseInstance
 
-func DB() *MySQLDatabaseInstance {
-	return db
+// GetDatabaseInstance returns the MySQL database connection
+func GetDatabaseInstance() *gorm.DB {
+	return mysqlInstance.dbConnection
 }
 
+// initialize the database connection
 func init() {
-	config := config.GetAppConfig().DB.MySQL
+	appConfig := config.GetAppConfig()
+	mysqlConfig := appConfig.Persistence.MySQL
 
-	host := config.Host
-	port := config.Port
+	// Prepare the connection string
+	dataSourceName := fmt.Sprintf("%s:%s@tcp(%s:%s)/%s?parseTime=True&loc=Local", mysqlConfig.User, mysqlConfig.Password, mysqlConfig.Host, mysqlConfig.Port, mysqlConfig.DatabaseName)
 
-	db = &MySQLDatabaseInstance{
-		Host: host,
-		Port: port,
-		Conn: fmt.Sprintf("%s:%s", host, port),
+	// Keep a single connection open and use it for all transactions
+	dbConnection, err := gorm.Open(mysql.Open(dataSourceName), &gorm.Config{})
+
+	if err != nil {
+		logger.Error(fmt.Sprintf("Error while connecting to db :%s", err.Error()))
 	}
 
-	fmt.Printf("Connected to DB: %v\n\n", db.Conn)
+	// Get the db instance from connection
+	db, err := dbConnection.DB()
+
+	if err != nil {
+		defer db.Close()
+		logger.Error(fmt.Sprintf("Error while connecting to db :%s", err.Error()))
+	}
+
+	db.SetConnMaxLifetime(10 * time.Second)
+
+	if !appConfig.Environment.IsProduction() {
+		// dbConnection.LogMode(true)
+	}
+
+	// Prepare the mysql instance
+	mysqlInstance = &MySQLDatabaseInstance{
+		host:         mysqlConfig.Host,
+		port:         mysqlConfig.Port,
+		user:         mysqlConfig.User,
+		databaseName: mysqlConfig.DatabaseName,
+		dbConnection: dbConnection,
+	}
 }
