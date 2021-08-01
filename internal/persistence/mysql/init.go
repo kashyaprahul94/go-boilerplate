@@ -25,7 +25,7 @@ func init() {
 	mysqlConfig := appConfig.Persistence.MySQL
 
 	// Prepare the connection string
-	dataSourceName := fmt.Sprintf("%s:%s@tcp(%s:%s)/%s?parseTime=True&loc=Local", mysqlConfig.User, mysqlConfig.Password, mysqlConfig.Host, mysqlConfig.Port, mysqlConfig.DatabaseName)
+	dataSourceName := fmt.Sprintf("%s:%s@tcp(%s:%s)/%s", mysqlConfig.User, mysqlConfig.Password, mysqlConfig.Host, mysqlConfig.Port, mysqlConfig.DatabaseName)
 
 	// Keep a single connection open and use it for all transactions
 	dbConnection, err := gorm.Open(mysql.Open(dataSourceName), &gorm.Config{})
